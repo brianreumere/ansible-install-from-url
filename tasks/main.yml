@@ -71,18 +71,18 @@
   register: installed
   when: perform_install is not undefined and perform_install
 
-- name: Regsiter {{ name }} installation fact
+- name: Register {{ name }} installation fact
   ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: installed
     value: "True"
-  when: installed is succeeded
+  when: installed is not skipped and installed is succeeded
 
-- name: Regsiter {{ name }} version fact
+- name: Register {{ name }} version fact
   ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: version
     value: "{{ version }}"
-  when: installed is succeeded
+  when: installed is not skipped and installed is succeeded
