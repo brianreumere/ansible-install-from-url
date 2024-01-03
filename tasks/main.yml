@@ -20,7 +20,7 @@
     state: directory
     suffix: "{{ name }}_install"
   register: install_dir
-  when: perform_install
+  when: perform_install is not undefined and perform_install
 
 - name: Download {{ name }}
   ansible.builtin.get_url:
@@ -31,7 +31,7 @@
     mode: 0644
     checksum: "{{ checksum }}"
   register: downloaded
-  when: perform_install
+  when: perform_install is not undefined and perform_install
 
 - name: Unarchive {{ name }} download
   unarchive:
@@ -45,6 +45,7 @@
   register: unarchived
   when:
     - unarchive
+    - perform_install is not undefined
     - perform_install
 
 - name: Set directory to install {{ name }} from to unarchived directory
@@ -52,6 +53,7 @@
     install_chdir: "{{ unarchived.dest }}/{{ unarchived.files[0] }}"
   when:
     - unarchive
+    - perform_install is not undefined
     - perform_install
 
 - name: Set directory to install {{ name }} from to download directory
@@ -59,6 +61,7 @@
     install_chdir: "{{ downloaded.dest }}"
   when:
     - not unarchive
+    - perform_install is not undefined
     - perform_install
 
 - name: Install {{ name }}
@@ -66,7 +69,7 @@
     chdir: "{{ install_chdir }}"
     cmd: "{{ install_cmd }}"
   register: installed
-  when: perform_install
+  when: perform_install is not undefined and perform_install
 
 - name: Regsiter {{ name }} installation fact
   ini_file:
