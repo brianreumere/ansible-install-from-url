@@ -41,6 +41,7 @@
     owner: root
     group: root
     mode: 0755
+    list_files: true
   register: unarchived
   when:
     - unarchive
@@ -48,7 +49,7 @@
 
 - name: Set directory to install {{ name }} from to unarchived directory
   set_fact:
-    install_chdir: "{{ unarchived.dest }}"
+    install_chdir: "{{ unarchived.dest }}/{{ unarchived.files[0] }}"
   when:
     - unarchive
     - perform_install
