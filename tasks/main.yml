@@ -10,10 +10,10 @@
   set_fact:
     perform_install: true
   when: |
-    ansible_local['install-from-url']['{{ name }}']['installed'] is undefined
-    or not ansible_local['install-from-url']['{{ name }}']['installed']
-    or ansible_local['install-from-url']['{{ name }}']['version'] is undefined
-    or ansible_local['install-from-url']['{{ name }}']['version'] != version
+    ansible_local['install-from-url'][name]['installed'] is undefined
+    or not ansible_local['install-from-url'][name]['installed']
+    or ansible_local['install-from-url'][name]['version'] is undefined
+    or ansible_local['install-from-url'][name]['version'] != version
 
 - name: Create temporary directory for {{ name }} install
   ansible.builtin.tempfile:
@@ -62,7 +62,7 @@
 
 - name: Install {{ name }}
   shell:
-    chdir: "{{ unarchived.dest }}"
+    chdir: "{{ install_chdir }}"
     cmd: "{{ install_cmd }}"
   register: installed
   when: perform_install
