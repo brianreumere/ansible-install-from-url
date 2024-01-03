@@ -1,0 +1,84 @@
+- name: Create custom facts directory
+  ansible.builtin.file:
+    path: /etc/ansible/facts.d
+    owner: root
+    group: root
+    mode: 0700
+    state: directory
+
+- name: Determine whether {{ name }} version {{ version }} needs to be installed
+  set_fact:
+    perform_install: true
+  when: |
+    ansible_local['install-from-url']['{{ name }}']['installed'] is undefined
+    or not ansible_local['install-from-url']['{{ name }}']['installed']
+    or ansible_local['install-from-url']['{{ name }}']['version'] is undefined
+    or ansible_local['install-from-url']['{{ name }}']['version'] != version
+
+- name: Create temporary directory for {{ name }} install
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: "{{ name }}_install"
+  register: install_dir
+  when: perform_install
+
+- name: Download {{ name }}
+  ansible.builtin.get_url:
+    url: "{{ download_url }}"
+    dest: "{{ install_dir.path }}"
+    owner: root
+    group: root
+    mode: 0644
+    checksum: "{{ checksum }}"
+  register: downloaded
+  when: perform_install
+
+- name: Unarchive {{ name }} download
+  unarchive:
+    remote_src: true
+    src: "{{ downloaded.dest }}"
+    dest: "{{ install_dir.path }}"
+    owner: root
+    group: root
+    mode: 0755
+  register: unarchived
+  when:
+    - unarchive
+    - perform_install
+
+- name: Set directory to install {{ name }} from to unarchived directory
+  set_fact:
+    install_chdir: "{{ unarchived.dest }}"
+  when:
+    - unarchive
+    - perform_install
+
+- name: Set directory to install {{ name }} from to download directory
+  set_fact:
+    install_chdir: "{{ downloaded.dest }}"
+  when:
+    - not unarchive
+    - perform_install
+
+- name: Install {{ name }}
+  shell:
+    chdir: "{{ unarchived.dest }}"
+    cmd: "{{ install_cmd }}"
+  register: installed
+  when: perform_install
+
+- name: Regsiter {{ name }} installation fact
+  ini_file:
+    dest: /etc/ansible/facts.d/install-from-url.fact
+    section: "{{ name }}"
+    option: installed
+    value: "True"
+  when: installed is succeeded
+
+- name: Regsiter {{ name }} version fact
+  ini_file:
+    dest: /etc/ansible/facts.d/install-from-url.fact
+    section: "{{ name }}"
+    option: version
+    value: "{{ version }}"
+  when: installed is succeeded
