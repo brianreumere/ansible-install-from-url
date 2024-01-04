@@ -62,9 +62,9 @@
     list_files: true
   register: unarchived_module
   when:
-    - unarchive
     - perform_install is not undefined
     - perform_install
+    - unarchive
     - ansible_facts['os_family'] != 'OpenBSD'
     - ansible_facts['os_family'] != 'FreeBSD'
 
@@ -85,9 +85,9 @@
       fi
   register: unarchived_shell
   when:
-    - unarchive
     - perform_install is not undefined
     - perform_install
+    - unarchive
     - |
       ansible_facts['os_family'] == 'OpenBSD'
       or ansible_facts['os_family'] == 'FreeBSD'
@@ -109,20 +109,25 @@
   ansible.builtin.set_fact:
     install_chdir: "{{ install_dir.path }}/{{ unarchived_lines[0] }}"
   when:
-    - unarchive
-    - unarchive_parent_dir.stat.isdir
     - perform_install is not undefined
     - perform_install
+    - unarchive
+    - unarchive_parent_dir is not skipped
+    - unarchive_parent_dir.stat.isdir
 
 - name: Set directory to install {{ name }} from to download directory
   ansible.builtin.set_fact:
     install_chdir: "{{ install_dir.path }}"
   when:
-    - |
-      not unarchive
-      or (unarchive and not unarchive_parent_dir.stat.isdir)
     - perform_install is not undefined
     - perform_install
+    - |
+      not unarchive
+      or (
+        unarchive
+        unarchive_parent_dir is not skipped
+        and not unarchive_parent_dir.stat.isdir
+      )
 
 - name: Install {{ name }}
   ansible.builtin.shell:
