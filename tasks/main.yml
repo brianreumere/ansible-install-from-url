@@ -1,3 +1,4 @@
+---
 - name: Create custom facts directory
   ansible.builtin.file:
     path: /etc/ansible/facts.d
