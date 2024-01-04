@@ -116,7 +116,7 @@
 
 - name: Set directory to install {{ name }} from to download directory
   ansible.builtin.set_fact:
-    install_chdir: "{{ downloaded.dest }}"
+    install_chdir: "{{ install_dir.path }}"
   when:
     - |
       not unarchive
