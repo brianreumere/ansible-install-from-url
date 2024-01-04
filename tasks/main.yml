@@ -130,7 +130,7 @@
         and not unarchive_parent_dir.stat.isdir
       )
 
-- name: Install {{ name }}
+- name: Install {{ name }}  # noqa: command-instead-of-shell
   ansible.builtin.shell:
     chdir: "{{ install_chdir }}"
     cmd: "{{ install_cmd }}"
