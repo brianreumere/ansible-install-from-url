@@ -99,7 +99,7 @@
 
 - name: Check if unarchiving created a parent directory
   ansible.builtin.stat:
-    path: "{{ unarchived_lines[0] }}"
+    path: "{{ install_dir.path }}/{{ unarchived_lines[0] }}"
   register: unarchive_parent_dir
   when: |
     (unarchived_module is not skipped and unarchived_module is succeeded)
