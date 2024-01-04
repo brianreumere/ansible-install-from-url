@@ -6,7 +6,7 @@ galaxy_info:
   author: Brian Reumere
   description: Install something from a URL
   license: ISC
-  min_ansible_version: 2.10
+  min_ansible_version: '2.10'
   github_branch: main
   platforms:
     - name: EL

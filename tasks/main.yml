@@ -7,7 +7,7 @@
     mode: '0700'
     state: directory
 
-- name: "Determine whether install needs to run for {{ name }} {{ version }}"
+- name: "Determine whether install needs to run for {{ [name, version].join(' ') }}"
   ansible.builtin.set_fact:
     perform_install: true
   when: |
@@ -138,15 +138,18 @@
   changed_when: installed.rc == 0
   when: perform_install is not undefined and perform_install
 
-- name: Register installation fact for {{ name }} {{ version }}
+- name: Register installation fact for {{ [name, version].join(' ') }}
   community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
+    owner: root
+    group: "{{ root_group }}"
+    mode: '0600'
     section: "{{ name }}"
     option: installed
     value: "True"
   when: installed is not skipped and installed is succeeded
 
-- name: Register version fact {{ name }} {{ version }}
+- name: Register version fact {{ [name, version].join(' ') }}
   community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     owner: root
