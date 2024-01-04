@@ -44,4 +44,6 @@ Use the role:
       ./acme.sh --install \
          --home /root/.acme.sh \
          --accountemail someone@example.net
+    creates:
+      - /root/.acme.sh
 ```
