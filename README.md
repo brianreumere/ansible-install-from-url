@@ -6,12 +6,19 @@ Downloads a file from a given URL, unarchives it, and runs a set of install comm
 
 ## Variables
 
+### Required
+
 - `name`: A unique name for the package
 - `version`: The version of the package to install
 - `download_url`: The URL to download the package from
 - `checksum`: The checksum of the downloaded file (formatted as expected by the [`get_url` module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html))
-- `unarchive`: Whether the downloaded file needs to be unarchived (defauls to `true`)
 - `install_cmd`: The command to run to install the package (runs relative to either the unarchived directory or the download directory if the downloaded file is not unarchived)
+
+### Optional
+
+- `unarchive`: Whether the downloaded file needs to be unarchived (defauls to `true`)
+- `creates`: A list of files or directories that if missing, will cause the install to run again (defaults to none)
+- `force_install`: Forces the install to be performed even if custom facts indicate it has run already (defaults to `false`)
 
 ## Example
 

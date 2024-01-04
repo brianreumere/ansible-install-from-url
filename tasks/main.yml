@@ -11,10 +11,13 @@
   ansible.builtin.set_fact:
     perform_install: true
   when: |
-    ansible_local['install-from-url'][name]['installed'] is undefined
-    or not ansible_local['install-from-url'][name]['installed']
-    or ansible_local['install-from-url'][name]['version'] is undefined
-    or ansible_local['install-from-url'][name]['version'] != version
+    (
+      ansible_local['install-from-url'][name]['installed'] is undefined
+      or not ansible_local['install-from-url'][name]['installed']
+      or ansible_local['install-from-url'][name]['version'] is undefined
+      or ansible_local['install-from-url'][name]['version'] != version
+    )
+    or force_install
 
 - name: Create temporary directory for {{ name }} install
   ansible.builtin.tempfile:
@@ -80,11 +83,20 @@
     unarchived_lines: "{{ unarchived_shell.stdout_lines }}"
   when: unarchived_shell is not skipped and unarchived_shell is succeeded
 
+- name: Check if unarchiving created a parent directory
+  ansible.builtin.stat:
+    path: "{{ unarchived_lines[0] }}"
+  register: unarchive_parent_dir
+  when: |
+    (unarchived_module is not skipped and unarchived_module is succeeded)
+    or (unarchived_shell is not skipped and unarchived_shell is succeeded)
+
 - name: Set directory to install {{ name }} from to unarchived directory
   ansible.builtin.set_fact:
     install_chdir: "{{ install_dir.path }}/{{ unarchived_lines[0] }}"
   when:
     - unarchive
+    - unarchive_parent_dir.stat.isdir
     - perform_install is not undefined
     - perform_install
 
@@ -92,7 +104,9 @@
   ansible.builtin.set_fact:
     install_chdir: "{{ downloaded.dest }}"
   when:
-    - not unarchive
+    - |
+      not unarchive
+      or (unarchive and not unarchive_parent_dir.stat.isdir)
     - perform_install is not undefined
     - perform_install
 
