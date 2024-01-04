@@ -8,7 +8,7 @@
     state: directory
 
 - name: Determine whether {{ name }} version {{ version }} needs to be installed
-  set_fact:
+  ansible.builtin.set_fact:
     perform_install: true
   when: |
     ansible_local['install-from-url'][name]['installed'] is undefined
@@ -34,8 +34,8 @@
   register: downloaded
   when: perform_install is not undefined and perform_install
 
-- name: Unarchive {{ name }} download
-  unarchive:
+- name: Unarchive {{ name }} download (using unarchive module)
+  ansible.builtin.unarchive:
     remote_src: true
     src: "{{ downloaded.dest }}"
     dest: "{{ install_dir.path }}"
@@ -43,22 +43,53 @@
     group: "{{ root_group }}"
     mode: 0755
     list_files: true
-  register: unarchived
+  register: unarchived_module
   when:
     - unarchive
     - perform_install is not undefined
     - perform_install
+    - ansible_facts['os_family'] != 'OpenBSD'
+    - ansible_facts['os_family'] != 'FreeBSD'
+
+- name: Get file list from unarchive module
+  set_fact:
+    unarchived_lines: unarchived_module.files
+  when: unarchived_module is not skipped and unarchived_module is succeeded
+
+- name: Unarchive {{ name }} download (using shell module)
+  ansible.builtin.shell:
+    chdir: "{{ install_dir.path }}"
+    cmd: |
+      if [ {{ downloaded.dest | quote }} = *.zip ]; then
+        unzip -Z1 {{ downloaded.dest | quote }}
+        unzip -q {{ downloaded.dest | quote }}
+      else
+        tar xzvf {{ downloaded.dest | quote }}
+      fi
+  register: unarchived_shell
+  when:
+    - unarchive
+    - perform_install is not undefined
+    - perform_install
+    - |
+      ansible_facts['os_family'] == 'OpenBSD'
+      or ansible_facts['os_family'] == 'FreeBSD'
+
+- name: Get file list from unarchive shell command
+  set_fact:
+    unarchived_lines: unarchived_shell.stdout_lines
+  when: unarchived_shell is not skipped and unarchived_shell is succeeded
 
 - name: Set directory to install {{ name }} from to unarchived directory
-  set_fact:
-    install_chdir: "{{ unarchived.dest }}/{{ unarchived.files[0] }}"
+  ansible.builtin.set_fact:
+    install_chdir: "{{ install_dir.path }}/{{ unarchived_lines[0] }}"
   when:
     - unarchive
     - perform_install is not undefined
     - perform_install
 
 - name: Set directory to install {{ name }} from to download directory
-  set_fact:
+  ansible.builtin.set_fact:
     install_chdir: "{{ downloaded.dest }}"
   when:
     - not unarchive
@@ -66,14 +97,14 @@
     - perform_install
 
 - name: Install {{ name }}
-  shell:
+  ansible.builtin.shell:
     chdir: "{{ install_chdir }}"
     cmd: "{{ install_cmd }}"
   register: installed
   when: perform_install is not undefined and perform_install
 
 - name: Register {{ name }} installation fact
-  ini_file:
+  ansible.builtin.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: installed
@@ -81,7 +112,7 @@
   when: installed is not skipped and installed is succeeded
 
 - name: Register {{ name }} version fact
-  ini_file:
+  ansible.builtin.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: version
