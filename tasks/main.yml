@@ -137,7 +137,7 @@
   when: perform_install is not undefined and perform_install
 
 - name: Register {{ name }} installation fact
-  ansible.builtin.ini_file:
+  community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: installed
@@ -145,7 +145,7 @@
   when: installed is not skipped and installed is succeeded
 
 - name: Register {{ name }} version fact
-  ansible.builtin.ini_file:
+  community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
     option: version
