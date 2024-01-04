@@ -2,7 +2,7 @@
 
 ## Overview
 
-Downloads a file from a given URL, unarchives it, and runs a set of install commands to install it. If the install command succeeds, sets custom persistent facts in [`/etc/ansible/facts.d`](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html#facts-d-or-local-facts) to indicate that the the software is installed and specify which version is installed. If the version is subsequently changed, the download and install steps will run again. Otherwise, a reinstall can be performed by manually editing the custom facts on the target host (either removing them or setting the installed fact to `false`).
+Downloads a file from a given URL, unarchives it, and runs a set of install commands to install it. If the install command succeeds, sets custom persistent facts in [`/etc/ansible/facts.d`](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html#facts-d-or-local-facts) to indicate that the the software is installed and specify which version is installed. If the version is subsequently changed, or if any files or directories included in the `creates` list are removed, the download and install steps will run again. Otherwise, a reinstall can be performed by setting `force_install` to `true`.
 
 ## Variables
 
