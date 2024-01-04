@@ -1,2 +1,24 @@
 ---
 dependencies: []
+galaxy_info:
+  namespace: brianreumere
+  role_name: install-from-url
+  description: Install something from a URL
+  license: ISC
+  github_branch: main
+  platforms:
+    - name: EL
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: GenericLinux
+      versions:
+        - all
+    - name: OpenBSD
+      versions:
+        - all
+    - name: FreeBSD
+      versions:
+        - all
