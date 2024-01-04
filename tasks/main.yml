@@ -53,7 +53,7 @@
 
 - name: Get file list from unarchive module
   set_fact:
-    unarchived_lines: unarchived_module.files
+    unarchived_lines: "{{ unarchived_module.files }}"
   when: unarchived_module is not skipped and unarchived_module is succeeded
 
 - name: Unarchive {{ name }} download (using shell module)
