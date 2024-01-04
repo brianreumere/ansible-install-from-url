@@ -77,7 +77,7 @@
 
 - name: Get file list from unarchive shell command
   set_fact:
-    unarchived_lines: unarchived_shell.stdout_lines
+    unarchived_lines: "{{ unarchived_shell.stdout_lines }}"
   when: unarchived_shell is not skipped and unarchived_shell is succeeded
 
 - name: Set directory to install {{ name }} from to unarchived directory
