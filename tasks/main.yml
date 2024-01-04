@@ -24,7 +24,7 @@
     path: "{{ item }}"
   register: installed_files
   loop: "{{ creates }}"
-  when: not perform_install
+  when: perform install is undefined or not perform_install
 
 - name: Check files
   ansible.builtin.set_fact:
