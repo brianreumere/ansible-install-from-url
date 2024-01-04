@@ -19,6 +19,20 @@
     )
     or force_install
 
+- name: Confirm files and directories created by installation exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: installed_files
+  loop: "{{ creates }}"
+  when: not perform_install
+
+- name: Check files
+  ansible.builtin.set_fact:
+    perform_install: true
+  when:
+    - installed_files is not skipped
+    - "{{ installed_files.results | community.general.json_query('[*].exists') is ansible.builtin.any }}"
+
 - name: Create temporary directory for {{ name }} install
   ansible.builtin.tempfile:
     state: directory
