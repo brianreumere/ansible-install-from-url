@@ -22,18 +22,10 @@ Downloads a file from a given URL, unarchives it, and runs a set of install comm
 
 ## Example
 
-Add the role to a `requirements.yml` file:
-
-```yaml
----
-- name: install-from-url
-  src: https://github.com/brianreumere/ansible-role-install-from-url
-```
-
 Install the role:
 
 ```sh
-ansible-galaxy install -r requirements.yml
+ansible-galaxy role install brianreumere.install_from_url
 ```
 
 Use the role:
@@ -42,7 +34,7 @@ Use the role:
 ---
 - name: Install acme.sh
   ansible.builtin.include_role:
-    name: install-from-url
+    name: brianreumere.install_from_url
   vars:
     name: acme.sh
     version: 3.0.7
