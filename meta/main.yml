@@ -2,7 +2,7 @@
 dependencies: []
 galaxy_info:
   namespace: brianreumere
-  role_name: install-from-url
+  role_name: install_from_url
   author: Brian Reumere
   description: Install something from a URL
   license: ISC
