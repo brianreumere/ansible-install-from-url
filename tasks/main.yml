@@ -4,10 +4,10 @@
     path: /etc/ansible/facts.d
     owner: root
     group: "{{ root_group }}"
-    mode: 0700
+    mode: '0700'
     state: directory
 
-- name: Determine whether {{ name }} version {{ version }} needs to be installed
+- name: "Determine whether install needs to run for {{ name }} {{ version }}"
   ansible.builtin.set_fact:
     perform_install: true
   when: |
@@ -33,32 +33,32 @@
     - installed_files is not skipped
     - installed_files.results | community.general.json_query('[*].exists') is ansible.builtin.any
 
-- name: Create temporary directory for {{ name }} install
+- name: Create temporary directory for install
   ansible.builtin.tempfile:
     state: directory
     suffix: "{{ name }}_install"
   register: install_dir
   when: perform_install is not undefined and perform_install
 
-- name: Download {{ name }}
+- name: Download
   ansible.builtin.get_url:
     url: "{{ download_url }}"
     dest: "{{ install_dir.path }}"
     owner: root
     group: "{{ root_group }}"
-    mode: 0644
+    mode: '0644'
     checksum: "{{ checksum }}"
   register: downloaded
   when: perform_install is not undefined and perform_install
 
-- name: Unarchive {{ name }} download (using unarchive module)
+- name: Unarchive download (using unarchive module)
   ansible.builtin.unarchive:
     remote_src: true
     src: "{{ downloaded.dest }}"
     dest: "{{ install_dir.path }}"
     owner: root
     group: "{{ root_group }}"
-    mode: 0755
+    mode: '0755'
     list_files: true
   register: unarchived_module
   when:
@@ -69,11 +69,11 @@
     - ansible_facts['os_family'] != 'FreeBSD'
 
 - name: Get file list from unarchive module
-  set_fact:
+  ansible.builtin.set_fact:
     unarchived_lines: "{{ unarchived_module.files }}"
   when: unarchived_module is not skipped and unarchived_module is succeeded
 
-- name: Unarchive {{ name }} download (using shell module)
+- name: Unarchive download (using shell module)
   ansible.builtin.shell:
     chdir: "{{ install_dir.path }}"
     cmd: |
@@ -84,6 +84,7 @@
         tar xzvf {{ downloaded.dest | quote }}
       fi
   register: unarchived_shell
+  changed_when: unarchived_shell.rc == 0
   when:
     - perform_install is not undefined
     - perform_install
@@ -93,7 +94,7 @@
       or ansible_facts['os_family'] == 'FreeBSD'
 
 - name: Get file list from unarchive shell command
-  set_fact:
+  ansible.builtin.set_fact:
     unarchived_lines: "{{ unarchived_shell.stdout_lines }}"
   when: unarchived_shell is not skipped and unarchived_shell is succeeded
 
@@ -105,7 +106,7 @@
     (unarchived_module is not skipped and unarchived_module is succeeded)
     or (unarchived_shell is not skipped and unarchived_shell is succeeded)
 
-- name: Set directory to install {{ name }} from to unarchived directory
+- name: Set directory to install from to unarchived directory
   ansible.builtin.set_fact:
     install_chdir: "{{ install_dir.path }}/{{ unarchived_lines[0] }}"
   when:
@@ -115,7 +116,7 @@
     - unarchive_parent_dir is not skipped
     - unarchive_parent_dir.stat.isdir
 
-- name: Set directory to install {{ name }} from to download directory
+- name: Set directory to install from to download directory
   ansible.builtin.set_fact:
     install_chdir: "{{ install_dir.path }}"
   when:
@@ -134,9 +135,10 @@
     chdir: "{{ install_chdir }}"
     cmd: "{{ install_cmd }}"
   register: installed
+  changed_when: installed.rc == 0
   when: perform_install is not undefined and perform_install
 
-- name: Register {{ name }} installation fact
+- name: Register installation fact for {{ name }} {{ version }}
   community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
     section: "{{ name }}"
@@ -144,9 +146,12 @@
     value: "True"
   when: installed is not skipped and installed is succeeded
 
-- name: Register {{ name }} version fact
+- name: Register version fact {{ name }} {{ version }}
   community.general.ini_file:
     dest: /etc/ansible/facts.d/install-from-url.fact
+    owner: root
+    group: "{{ root_group }}"
+    mode: '0600'
     section: "{{ name }}"
     option: version
     value: "{{ version }}"

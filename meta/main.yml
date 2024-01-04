@@ -3,8 +3,10 @@ dependencies: []
 galaxy_info:
   namespace: brianreumere
   role_name: install-from-url
+  author: Brian Reumere
   description: Install something from a URL
   license: ISC
+  min_ansible_version: 2.10
   github_branch: main
   platforms:
     - name: EL
