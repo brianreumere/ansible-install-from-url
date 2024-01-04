@@ -31,7 +31,7 @@
     perform_install: true
   when:
     - installed_files is not skipped
-    - "{{ installed_files.results | community.general.json_query('[*].exists') is ansible.builtin.any }}"
+    - installed_files.results | community.general.json_query('[*].exists') is ansible.builtin.any
 
 - name: Create temporary directory for {{ name }} install
   ansible.builtin.tempfile:
